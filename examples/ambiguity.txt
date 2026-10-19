@@ -1,0 +1,8 @@
+Fictional Archive Profiles: Unresolved Selection
+
+This is an authored conditional reference for a fictional archive, not an observation of a running service.
+The archive uses one selected profile. Its identifier is omitted and cannot be inferred from this reference.
+Profile E requires every stored archive to be encrypted at rest and deleted after thirty days.
+Profile P requires every stored archive to remain unencrypted and to be retained indefinitely.
+These are alternative conditional profiles, not simultaneous unconditional rules.
+Nothing in this reference identifies which profile was selected.

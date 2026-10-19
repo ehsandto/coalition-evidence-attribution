@@ -1,0 +1,5 @@
+Fictional Archive Specification: Deletion
+
+This is an authored reference for a fictional archive, not an observation of a running service.
+Every stored archive is deleted after thirty days.
+This document specifies no encryption requirement.
