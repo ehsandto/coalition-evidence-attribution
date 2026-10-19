@@ -4,6 +4,10 @@ Bounded, source-acquired **signed Shapley attribution of documentary evidence**.
 Experimental GenLayer infrastructure; not a truth oracle, source reputation score,
 financial allocator, graph mutation system or consumable certificate.
 
+[Verified StudioNet deployment](https://explorer-studio.genlayer.com/address/0x7a201CDDD0c3e9CcaBcBd79A0C04CD05F3f30bB8).
+Deployed source matches this file's published version. See [live proof ledger](LIVE_PROOFS.md)
+for finalized execution results, independently checked arithmetic and fixture scope.
+
 ## Problem and why GenLayer
 
 Two documents may jointly establish a claim although neither establishes it alone.
@@ -120,6 +124,13 @@ without semantic accounting. Duplicate resolution must revert without replacing
 the old result. Actual live outcomes, not these expectations, are recorded in
 [LIVE_PROOFS.md](LIVE_PROOFS.md).
 
+Observed StudioNet outcomes: complementary documents received `1/2` each. The
+uncertainty evaluation finalized with **MAJORITY_DISAGREE and no resolution**, not
+a BOUNDED artifact. The wrong commitment produced HELD with no attribution;
+replay and wrong-root transactions reverted as expected. All nine transactions
+and independent state readbacks are documented, with errors and disagreement
+kept separate from successful committed execution.
+
 ## Install and test
 
 ```powershell
@@ -137,6 +148,11 @@ execute the actual extracted validator and verify independent re-observation.
 Neither is a substitute for live distributed consensus. Exhaustive arithmetic
 tests cover every 2/3-source known utility table and all two-source uncertainty
 completions. No production audit or semantic error-free guarantee is claimed.
+
+Local validation: 37 Python tests, five independent Node checker tests, five SDK
+calldata roundtrips, and GenVM lint/SDK validation pass. Arithmetic checks include
+2,214 exact tables, 216 two-source uncertainty completions and permutation-based
+enumeration of all 2,187 completions of an all-unknown three-source game.
 
 ## Deployment and interaction
 

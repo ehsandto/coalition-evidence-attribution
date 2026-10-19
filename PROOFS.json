@@ -1,0 +1,169 @@
+{
+  "network": "studionet",
+  "chain_id": 61999,
+  "signer": "0x7a413BB4AB62E31d62d4cD9efC8C8a8Dae37FB42",
+  "fixture_commit": "28eecfdd24a750c316640e33200fd9f4534ddfe7",
+  "transactions": [
+    {
+      "step": "deploy",
+      "verified": true,
+      "hash": "0x95af95429f637354e764e1b6a3f348c6c50a8e26a1208903727990c1b529fac8",
+      "address": "0x7a201CDDD0c3e9CcaBcBd79A0C04CD05F3f30bB8",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "consensus": "MAJORITY_AGREE"
+    },
+    {
+      "step": "open-complementary-v1",
+      "verified": true,
+      "hash": "0x6b9ed8c9ffa4883ce1d7e53e6ff45fa6edc00bee7f23b902e121451792048827",
+      "address": "0x7a201CDDD0c3e9CcaBcBd79A0C04CD05F3f30bB8",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "consensus": "MAJORITY_AGREE"
+    },
+    {
+      "step": "resolve-complementary-v1",
+      "verified": true,
+      "hash": "0x505e5fd9dd0520115b84213682ccab38a2d50385a1458fd75dc01f44037fb98d",
+      "address": "0x7a201CDDD0c3e9CcaBcBd79A0C04CD05F3f30bB8",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "consensus": "MAJORITY_AGREE"
+    },
+    {
+      "step": "open-uncertain-v1",
+      "verified": true,
+      "hash": "0x36efaa4df42af8663f64565da7e9e905c1333f3422b3f011237e2608450a31e0",
+      "address": "0x7a201CDDD0c3e9CcaBcBd79A0C04CD05F3f30bB8",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "consensus": "MAJORITY_AGREE"
+    },
+    {
+      "step": "resolve-uncertain-v1",
+      "verified": true,
+      "hash": "0x66eeff6b6ea50fb6bd68078f93043cb1debb7e82e39282b099b16c7a3eac1010",
+      "address": "0x7a201CDDD0c3e9CcaBcBd79A0C04CD05F3f30bB8",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "consensus": "MAJORITY_DISAGREE",
+      "application_committed": false
+    },
+    {
+      "step": "open-bad-commitment-v1",
+      "verified": true,
+      "hash": "0xdf840d463f1f1202ad6cc451f0714defa6c551a038a016c2dde7511918dffb8a",
+      "address": "0x7a201CDDD0c3e9CcaBcBd79A0C04CD05F3f30bB8",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "consensus": "MAJORITY_AGREE"
+    },
+    {
+      "step": "resolve-bad-commitment-v1",
+      "verified": true,
+      "hash": "0x30b5a473601167b1548b090ee0ae2ee9705d3659bc210cc3aab61062bd8f5848",
+      "address": "0x7a201CDDD0c3e9CcaBcBd79A0C04CD05F3f30bB8",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "consensus": "MAJORITY_AGREE"
+    },
+    {
+      "step": "replay-resolution",
+      "verified": true,
+      "hash": "0xba3f7c66eb2ca959073e6b149290b4e347959b96682139a775b21895ba84bf3a",
+      "address": "0x7a201CDDD0c3e9CcaBcBd79A0C04CD05F3f30bB8",
+      "status": "FINALIZED",
+      "execution": "ERROR",
+      "consensus": "MAJORITY_AGREE",
+      "expected_error_matched": true
+    },
+    {
+      "step": "wrong-input-root",
+      "verified": true,
+      "hash": "0x624df79f47a45a53830257114acaef336a1e471e45c95808ddfcbcaae6d7e092",
+      "address": "0x7a201CDDD0c3e9CcaBcBd79A0C04CD05F3f30bB8",
+      "status": "FINALIZED",
+      "execution": "ERROR",
+      "consensus": "MAJORITY_AGREE",
+      "expected_error_matched": true
+    }
+  ],
+  "cases": {
+    "complementary-v1": {
+      "case": "0fa667cb1c7abb651c20f8fff14043312841af699b1fad799b035491f4677ca4",
+      "input_root": "578c66da3c1d817b76675d634d42514d474e53eb72ed5499f73d4e7d5a9975ce",
+      "root": "3d29d952f7ccf65686fba1987f860d71566ee248dd3e61578eca6d8e7f121e10",
+      "verified": true,
+      "labels": [
+        "NEITHER",
+        "NEITHER",
+        "NEITHER",
+        "SUPPORT"
+      ],
+      "acquisition": "READY",
+      "output": {
+        "status": "EXACT",
+        "intervals": [
+          {
+            "source_index": 0,
+            "lower": 1,
+            "upper": 1,
+            "denominator": 2
+          },
+          {
+            "source_index": 1,
+            "lower": 1,
+            "upper": 1,
+            "denominator": 2
+          }
+        ],
+        "full_coalition": "SUPPORT",
+        "utility_map": {
+          "SUPPORT": 1,
+          "REFUTE": -1,
+          "NEITHER": 0
+        },
+        "unknown_domain": [
+          -1,
+          1
+        ],
+        "document_attribution_only": true
+      }
+    },
+    "uncertain-v1": {
+      "case": "86c0ca27a7cc41487b6f11633f31578de51cebc5eec0cfc52fda59df7094f638",
+      "input_root": "dff480970e88e3aae066cc944cf33e6401cceb2a2c7257ac0201a87a8a8a12f7",
+      "resolution_absent": true,
+      "exact_consumer_denied": true,
+      "observed_network_result": "MAJORITY_DISAGREE",
+      "verified": true
+    },
+    "bad-commitment-v1": {
+      "case": "fa1907d078a0b4f7e3d316f99ce3cb77f41948338b947084ffe7a727bf4b32a5",
+      "input_root": "b96a8dc89a615ac77a517fd6a4c124ee6cc6c10d25d328bfe40491e23e2fb83e",
+      "root": "f2d3e0a3124e65f8a8df65e9795ccdc0acc6a3cdbe962f8ffa34c03472bdbce2",
+      "verified": true,
+      "labels": [
+        "NEITHER",
+        "UNKNOWN",
+        "UNKNOWN",
+        "UNKNOWN"
+      ],
+      "acquisition": "HELD",
+      "output": {
+        "status": "HELD",
+        "intervals": [],
+        "reason": "HELD",
+        "document_attribution_only": true
+      }
+    }
+  },
+  "address": "0x7a201CDDD0c3e9CcaBcBd79A0C04CD05F3f30bB8",
+  "source": {
+    "address": "0x7a201CDDD0c3e9CcaBcBd79A0C04CD05F3f30bB8",
+    "source_match": true,
+    "sha256": "af64eb905926924eb35f5438447b6fc1711692db7d252e13407ad4ffbc989c87"
+  },
+  "final_readback_verified": true
+}

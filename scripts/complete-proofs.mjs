@@ -21,14 +21,20 @@ function broadcast(args,onHash){
   proc.on('error',()=>reject(Error('CLI launch failed')));proc.on('close',resolve);
  });
 }
-async function transaction(step,args,expected='SUCCESS',message){
+async function transaction(step,args,expected='SUCCESS',message,allowedConsensus=['MAJORITY_AGREE']){
  let entry=proofs.transactions.find(x=>x.step===step);
  if(!entry){entry={step,verified:false,broadcast_unknown:true};proofs.transactions.push(entry);save();
   await broadcast(args,hash=>{entry.hash=hash;delete entry.broadcast_unknown;save();console.log(step+' '+hash);});
  }
  if(!entry.hash)throw Error('Unknown broadcast outcome; inspect sender history');
- const inspected=await receipt(entry.hash,expected,message);Object.assign(entry,inspected,{verified:true});save();
- console.log(JSON.stringify({step,status:entry.status,execution:entry.execution}));return entry;
+ const inspected=await receipt(entry.hash,expected,message,allowedConsensus);Object.assign(entry,inspected,{verified:true});save();
+ console.log(JSON.stringify({step,status:entry.status,execution:entry.execution,consensus:entry.consensus}));return entry;
+}
+async function verifyAbsent(key,inputRoot){
+ for(const [method,args] of [['get_resolution',[key]],['exact_attribution',[key,inputRoot]]]){
+  let denied=false;try{await read(proofs.address,method,args);}catch(e){denied=e.code===-32000&&e.details==='execution failed';}
+  if(!denied)throw Error('Unresolved case unexpectedly exposes a result');
+ }
 }
 const claim='Every stored archive is encrypted at rest and deleted after thirty days.';
 const sources=(names,bad=false)=>names.map((name,i)=>{
@@ -48,19 +54,27 @@ try{
   await transaction('open-'+scenario.name,['write',proofs.address,'open_case','--args',scenario.name,scenario.claim,scenario.sources]);
   const input=await read(proofs.address,'get_case',[key]);
   if(digest(input.spec)!==input.input_root)throw Error('Input root mismatch');
-  await transaction('resolve-'+scenario.name,['write',proofs.address,'resolve','--args',key,input.input_root]);
-  proofs.cases[scenario.name]=await state(proofs.address,key);save();
+  const resolution=await transaction('resolve-'+scenario.name,['write',proofs.address,'resolve','--args',key,input.input_root],
+   'SUCCESS',undefined,scenario.name==='uncertain-v1'?['MAJORITY_AGREE','MAJORITY_DISAGREE']:['MAJORITY_AGREE']);
+  if(resolution.consensus==='MAJORITY_DISAGREE'){
+   await verifyAbsent(key,input.input_root);
+   resolution.application_committed=false;
+   proofs.cases[scenario.name]={case:key,input_root:input.input_root,resolution_absent:true,exact_consumer_denied:true,
+    observed_network_result:'MAJORITY_DISAGREE',verified:true};
+  }else proofs.cases[scenario.name]=await state(proofs.address,key);
+  save();
   console.log(JSON.stringify({scenario:scenario.name,...proofs.cases[scenario.name]}));
  }
  const first=proofs.cases['complementary-v1'];
  await transaction('replay-resolution',['write',proofs.address,'resolve','--args',first.case,first.input_root],'ERROR','Already resolved');
  await transaction('wrong-input-root',['write',proofs.address,'resolve','--args',first.case,'f'.repeat(64)],'ERROR','Input root mismatch');
  for(const [name,prior] of Object.entries(proofs.cases)){
+  if(prior.resolution_absent){await verifyAbsent(prior.case,prior.input_root);continue;}
   const current=await state(proofs.address,prior.case);
   if(current.root!==prior.root)throw Error('Negative test changed old result');
   proofs.cases[name]=current;
  }
  proofs.source=await source(proofs.address);proofs.final_readback_verified=true;save();
  console.log(JSON.stringify({complete:true,address:proofs.address,source_match:proofs.source.source_match,
-  cases:Object.fromEntries(Object.entries(proofs.cases).map(([name,c])=>[name,c.output.status]))}));
+  cases:Object.fromEntries(Object.entries(proofs.cases).map(([name,c])=>[name,c.resolution_absent?'NO_CONSENSUS_NO_RECORD':c.output.status]))}));
 }catch{console.error('Sanitized proof workflow stopped; inspect journal hashes and state before any retry');process.exitCode=1;}

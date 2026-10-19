@@ -8,13 +8,16 @@ export const canonical=x=>x===null||typeof x!=='object'?JSON.stringify(x).replac
  Array.isArray(x)?'['+x.map(canonical).join(',')+']':'{'+Object.keys(x).sort().map(k=>canonical(k)+':'+canonical(x[k])).join(',')+'}';
 export const sha=x=>crypto.createHash('sha256').update(x).digest('hex');
 export const digest=x=>sha(canonical(x));
+// Match Python str.split() whitespace, including NEL and U+001C..U+001F,
+// without treating U+FEFF as whitespace as JavaScript trim() would.
+export const normalizedText=x=>x.split(/[\u0009-\u000d\u001c-\u0020\u0085\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]+/u).filter(Boolean).join(' ');
 export async function rpc(method,params){
  const r=await fetch('https://studio.genlayer.com/api',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params}),signal:AbortSignal.timeout(20000)});
  if(!r.ok)throw Error('HTTP failure');const p=await r.json();if(p.error||p.result==null)throw Error('RPC failure');return p.result;
 }
 export const client=createClient({chain:studionet});
 export const read=(address,functionName,args)=>client.readContract({address,functionName,args});
-export async function receipt(hash,expected='SUCCESS',message){
+export async function receipt(hash,expected='SUCCESS',message,allowedConsensus=['MAJORITY_AGREE']){
  let tx=await rpc('eth_getTransactionByHash',[hash]);
  for(let i=0;tx.status!=='FINALIZED'&&i<20;i++){await new Promise(r=>setTimeout(r,2500));tx=await rpc('eth_getTransactionByHash',[hash]);}
  const leader=tx.consensus_data?.leader_receipt?.find(x=>x.mode==='leader');
@@ -22,7 +25,7 @@ export async function receipt(hash,expected='SUCCESS',message){
  const decoded=typeof raw!=='string'?'':(/^[A-Za-z0-9+/]*={0,2}$/.test(raw)&&raw.length%4===0?Buffer.from(raw,'base64').toString('utf8'):raw);
  const result={hash,address:tx.to_address??tx.to,status:tx.status,execution:leader?.execution_result,consensus:tx.result_name,
   ...(message?{expected_error_matched:decoded.includes(message)}:{})};
- if(tx.status!=='FINALIZED'||leader?.execution_result!==expected||tx.result_name!=='MAJORITY_AGREE'||(message&&!decoded.includes(message)))throw Error('Receipt unverified');
+ if(tx.status!=='FINALIZED'||leader?.execution_result!==expected||!allowedConsensus.includes(tx.result_name)||(message&&!decoded.includes(message)))throw Error('Receipt unverified');
  return result;
 }
 export async function source(address){
@@ -55,13 +58,13 @@ export async function state(address,key){
   digest({contract:address,creator:c.spec.creator,nonce:c.spec.nonce})!==key||
   canonical(record.report.binding)!==canonical({case:key,contract:address,input_root:c.input_root,policy:c.spec.policy}))throw Error('Root/binding mismatch');
  const rows=record.report.sources,specs=c.spec.sources,n=specs.length;
- if(rows.length!==n||record.report.labels.length!==(1<<n)||record.report.labels[0]!=='NEITHER'||
+ if(![2,3].includes(n)||c.spec.policy!=='coalition-evidence-attribution-v1'||rows.length!==n||record.report.labels.length!==(1<<n)||record.report.labels[0]!=='NEITHER'||
   record.report.labels.some(x=>!['SUPPORT','REFUTE','NEITHER','UNKNOWN'].includes(x)))throw Error('Coverage/schema mismatch');
  let ok=true;
  for(let i=0;i<n;i++){
-  const r=rows[i],s=specs[i];if(r.url!==s.url)throw Error('Source binding');
+  const r=rows[i],s=specs[i];if(r.url!==s.url||!Number.isInteger(r.http)||r.http<0||r.http>599||typeof r.body!=='string')throw Error('Source binding/types');
   if(['OK','HASH_MISMATCH'].includes(r.status)){
-   if(r.http!==200||Buffer.byteLength(r.body)<1||Buffer.byteLength(r.body)>5000||r.body.includes('\0')||!r.body.trim()||sha(r.body)!==r.hash||sha(r.body.trim().split(/\s+/u).join(' '))!==r.fingerprint||r.status!==(r.hash===s.sha256?'OK':'HASH_MISMATCH'))throw Error('Source integrity');
+   if(r.http!==200||Buffer.byteLength(r.body)<1||Buffer.byteLength(r.body)>5000||r.body.includes('\0')||!normalizedText(r.body)||sha(r.body)!==r.hash||sha(normalizedText(r.body))!==r.fingerprint||r.status!==(r.hash===s.sha256?'OK':'HASH_MISMATCH'))throw Error('Source integrity');
   }else if(r.body||r.hash||r.fingerprint||!['UNAVAILABLE','HTTP_ERROR','SIZE_ERROR','ENCODING_ERROR','TEXT_ERROR'].includes(r.status))throw Error('Invalid source failure');
   if(r.status!=='OK')ok=false;
  }

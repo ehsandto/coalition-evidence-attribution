@@ -271,6 +271,36 @@ def test_source_failure_cannot_be_promoted():
         NS["check_report"](report, {}, specs)
 
 
+def test_three_source_whole_coalition_coverage(contract, direct_vm):
+    key, root = open_case(contract, sources=SOURCE)
+    setup(direct_vm, ["NEITHER", "NEITHER", "SUPPORT", "NEITHER", "NEITHER", "NEITHER", "UNKNOWN"], SOURCE)
+    contract.resolve(key, root)
+    record = contract.get_resolution(key)
+    assert len(record["report"]["labels"]) == 8
+    assert record["output"]["status"] == "BOUNDED"
+    assert len(record["output"]["intervals"]) == 3
+    assert all(x["denominator"] == 6 for x in record["output"]["intervals"])
+    with direct_vm.expect_revert("No exact attribution"):
+        contract.exact_attribution(key, root)
+
+
+@pytest.mark.parametrize("claim", ["too short", " leading claim with invalid whitespace", "valid-looking claim\nwith newline", "x" * 501])
+def test_claim_bounds(contract, direct_vm, claim):
+    with direct_vm.expect_revert("Invalid nonce/claim"):
+        contract.open_case("invalid", claim, "\n".join(SOURCE.splitlines()[:2]))
+
+
+def test_creator_limit_and_unknown_reads(contract, direct_vm):
+    for i in range(32):
+        open_case(contract, "case-" + str(i))
+    with direct_vm.expect_revert("Creator limit"):
+        open_case(contract, "overflow")
+    with direct_vm.expect_revert("Unknown case"):
+        contract.get_case("f" * 64)
+    with direct_vm.expect_revert("Unknown case"):
+        contract.resolve("f" * 64, "e" * 64)
+
+
 def test_prompt_contains_bodies_and_every_coalition_not_credit_targets():
     prompt = NS["coalition_prompt"](CLAIM, [{"body": x.decode()} for x in BODIES])
     data = json.loads(prompt.split("DATA=", 1)[1])

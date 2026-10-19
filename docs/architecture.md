@@ -17,7 +17,7 @@ integer conservation or explicit algebraic uncertainty intervals.
 | Unknown approved as known | UNKNOWN stays a range; failed acquisition gives HELD with no attribution |
 | Stale/replayed/cross-case report | Authenticated nonce namespace, input root and deployment/case binding; terminal resolution cannot be overwritten |
 
-At most three sources mean seven nonempty coalitions and eighteen weighted
+At most three sources mean seven nonempty coalitions and twelve subset-weighted
 marginal terms. Full bodies are each <=5000 bytes, not silently truncated.
 Output roots bind the complete consensus report and all computed fractions.
 
